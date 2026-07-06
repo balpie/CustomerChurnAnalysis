@@ -13,3 +13,5 @@ La cartella `doc` contiene le specifiche del progetto, e
 la documentazione riguardante le scelte progettuali.
 La cartella `data` contiene il dataset, e le operazioni su esso effettuate
 per una prima valutazione e le operazioni di preprocessing
+
+Il {dataset}[https://www.kaggle.com/datasets/blastchar/telco-customer-churn/code?datasetId=13996&sortBy=voteCount] preso come riferimento
