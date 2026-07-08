@@ -31,12 +31,9 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])
 def customer_info():
     if request.method == 'POST':
-        # HACK
-        record = request.form.to_dict()
-        record["Unnamed: 0"] = 3
 
-        print(record)
-        pred = predict_churn(record)
+        print(dict(request.form))
+        pred = predict_churn(request.form.to_dict())
         
         return f"predizione: {pred['prediction']}"
     return render_template("index.html")
