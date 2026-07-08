@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Telco Customer Churn Predictor</h1>
+
+    <p>
+        Inserire le informazioni del cliente per prevedere un'eventuale abbandono
+    </p>
+
+    <form method="POST">
+
+        <div class="field">
+            <label>Sesso</label>
+            <select name="gender">
+                <option value="Male">Maschio</option>
+                <option value="Female">Femmina</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Cliente anziano</label>
+            <select name="SeniorCitizen">
+                <option value="0">No</option>
+                <option value="1">Sì</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Partner</label>
+            <select name="Partner">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Persone a carico</label>
+            <select name="Dependents">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Durata del contratto (mesi)</label>
+            <input type="number" name="tenure" min="0" max="100" step="1">
+        </div>
+
+        <div class="field">
+            <label>Servizio telefonico</label>
+            <select name="PhoneService">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Numero di linee telefoniche</label>
+            <select name="MultipleLines">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+                <option value="No phone service">Nessun servizio telefonico</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Servizio Internet</label>
+            <select name="InternetService">
+                <option value="" selected disabled>Selezionare servizio internet</option>
+                <option value="DSL">DSL</option>
+                <option value="Fiber optic">Fibra ottica</option>
+                <option value="No">Nessun servizio Internet</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Sicurezza online</label>
+            <select name="OnlineSecurity">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+                <option value="No internet service">Nessun servizio Internet</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Backup online</label>
+            <select name="OnlineBackup">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+                <option value="No internet service">Nessun servizio Internet</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Protezione dispositivo</label>
+            <select name="DeviceProtection">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+                <option value="No internet service">Nessun servizio Internet</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Assistenza tecnica</label>
+            <select name="TechSupport">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+                <option value="No internet service">Nessun servizio Internet</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Streaming TV</label>
+            <select name="StreamingTV">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+                <option value="No internet service">Nessun servizio Internet</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Streaming film</label>
+            <select name="StreamingMovies">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+                <option value="No internet service">Nessun servizio Internet</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Tipo di contratto</label>
+            <select name="Contract">
+                <option value="Month-to-month">Mensile</option>
+                <option value="One year">Un anno</option>
+                <option value="Two year">Due anni</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Fatturazione cartacea</label>
+            <select name="PaperlessBilling">
+                <option value="Yes">Sì</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Metodo di pagamento</label>
+            <select name="PaymentMethod">
+                <option value="Electronic check">Assegno elettronico</option>
+                <option value="Mailed check">Assegno cartaceo inviato per posta</option>
+                <option value="Bank transfer (automatic)">Bonifico (automatico)</option>
+                <option value="Credit card (automatic)">Carta di credito (automatico)</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Costo mensile ($)</label>
+            <input type="number" name="MonthlyCharges" min="0" step="1">
+        </div>
+
+        <div class="field">
+            <label>Costo totale ($)</label>
+            <input type="number" name="TotalCharges" min="0" step="1">
+        </div>
+        <div class="button-container">
+            <button type="submit">
+                Predici Probabilità di abbandono
+            </button>
+
+        </div>
+
+    </form>
+
+    {% if prediction %}
+    <div class="result">
+        Prediction: {{ prediction }}
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
