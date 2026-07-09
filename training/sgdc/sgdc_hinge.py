@@ -21,8 +21,8 @@ label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y)
 
 # Individua automaticamente le colonne categoriche e numeriche
-categorical_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
-numeric_cols = X.select_dtypes(exclude=["object", "category"]).columns.tolist()
+categorical_cols = X.select_dtypes(include=["object", "str","category"]).columns.tolist()
+numeric_cols = X.select_dtypes(exclude=["object", "str", "category"]).columns.tolist()
 
 # Preprocessing: le categoriche vengono codificate con OneHotEncoder,
 # le numeriche vengono standardizzate. In questo modo l'encoding
@@ -41,7 +41,7 @@ preprocessor = ColumnTransformer(
 pipeline = Pipeline(
     steps=[
         ("preprocessor", preprocessor),
-        ("classifier", SGDClassifier(loss="hinge", penalty="l2", max_iter=1000)),
+        ("classifier", SGDClassifier(loss="hinge", penalty="l2", max_iter=1000, random_state=42)),
     ]
 )
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     # Salva su disco la pipeline addestrata (preprocessing + modello) e il
     # label encoder, in modo da poterli ricaricare da un altro script senza
     # dover rieseguire il training da capo.
-    joblib.dump(pipeline, SCRIPT_DIR / "../../models/sgdc/churn_pipeline_sgdc.joblib")
+    joblib.dump(pipeline, SCRIPT_DIR / "../../models/sgdc/churn_pipeline_sgdc_hinge.joblib")
     joblib.dump(label_encoder, SCRIPT_DIR / "../../models/sgdc/churn_label_encoder_sgdc.joblib")
     joblib.dump(list(X.columns), SCRIPT_DIR / "../../models/sgdc/churn_feature_columns_sgdc.joblib")
-    print("\nModello salvato in: ../../models/sgdc/churn_pipeline_sgdc.joblib")
+    print("\nModello salvato in: ../../models/sgdc/churn_pipeline_sgdc_hinge.joblib")
