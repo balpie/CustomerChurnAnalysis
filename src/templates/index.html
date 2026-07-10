@@ -21,6 +21,17 @@
 
     <form method="POST">
 
+        <div class="field model">
+            <label>Modello di classificazione</label>
+            <select name="model" id="model">
+                    {% for model in models %}
+                        <option value="{{ model.name }}">
+                            {{ model.desc }}
+                        </option>
+                    {% endfor %}
+            </select>
+        </div>
+
         <div class="field">
             <label>Sesso</label>
             <select name="gender">
