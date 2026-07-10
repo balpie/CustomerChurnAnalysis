@@ -7,9 +7,11 @@ from sklearn.metrics import classification_report, confusion_matrix
 from pathlib import Path
 import pandas as pd
 import joblib 
+import json
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-df = pd.read_csv(SCRIPT_DIR / "../../data/clean/telco_customer_churn_clean.csv")
+PRJ_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+print(PRJ_ROOT_DIR)
+df = pd.read_csv(PRJ_ROOT_DIR / "data/clean/telco_customer_churn_clean.csv")
 print(df)
 
 # Separa target dalle feature
@@ -100,20 +102,48 @@ def predict_churn(record: dict) -> dict:
     }
 
 
-
 if __name__ == "__main__":
-    # Esempio: prendo un record esistente dal test set e lo passo alla pipeline
-    esempio_record = X_test.iloc[0].to_dict()
-    print("\nEsempio di predizione su un singolo record:")
-    print(predict_churn(esempio_record))
-
-if __name__ == "__main__":
-    # ... (predizione di esempio)
 
     # Salva su disco la pipeline addestrata (preprocessing + modello) e il
     # label encoder, in modo da poterli ricaricare da un altro script senza
     # dover rieseguire il training da capo.
-    joblib.dump(pipeline, SCRIPT_DIR / "../../models/sgdc/churn_pipeline_sgdc_hinge.joblib")
-    joblib.dump(label_encoder, SCRIPT_DIR / "../../models/sgdc/churn_label_encoder_sgdc.joblib")
-    joblib.dump(list(X.columns), SCRIPT_DIR / "../../models/sgdc/churn_feature_columns_sgdc.joblib")
-    print("\nModello salvato in: ../../models/sgdc/churn_pipeline_sgdc_hinge.joblib")
+    # Creo la nuova directory se non esiste, altrimenti continuo
+    Path(PRJ_ROOT_DIR / "models/sgdc_hinge").mkdir(parents = True, exist_ok = True)
+
+    pipeline_path = PRJ_ROOT_DIR / "models/sgdc_hinge/churn_pipeline_sgdc_hinge.joblib"
+    label_encoder_path = PRJ_ROOT_DIR / "models/sgdc_hinge/churn_label_encoder_sgdc.joblib"
+    features_path = PRJ_ROOT_DIR / "models/sgdc_hinge/churn_feature_columns_sgdc.joblib"
+
+    joblib.dump(pipeline, pipeline_path)
+    joblib.dump(label_encoder, label_encoder_path)
+    joblib.dump(list(X.columns), features_path)
+
+
+    # Aggiorno il json dei modelli disponibili
+    model_metadata = {
+            "name": "sgdc_hinge", 
+            "desc": "Stochastic Gradient Descent Classifier (hinge loss)",
+            "pipeline_path": str(pipeline_path.relative_to(PRJ_ROOT_DIR)),
+            "label_encoder_path": str(label_encoder_path.relative_to(PRJ_ROOT_DIR)),
+            "features_path": str(features_path.relative_to(PRJ_ROOT_DIR))
+        }
+    try:
+        with open(PRJ_ROOT_DIR / "models/metadata.json", "r") as f:
+            models = json.load(f)
+    except FileNotFoundError:
+        models = []
+    except json.JSONDecodeError:
+        models = []
+
+    found = False
+    for x in models:
+        if x["name"] == model_metadata["name"]:
+            found = True
+            break
+    if not found:
+        with open(PRJ_ROOT_DIR / "models/metadata.json", "w") as f:
+            models.append(model_metadata)
+            json.dump(models, f)
+
+    print("\nModello salvato in: "+ str(PRJ_ROOT_DIR) + "/models/sgdc_hinge/")
+
