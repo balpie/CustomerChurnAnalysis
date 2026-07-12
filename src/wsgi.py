@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template
 import joblib
 import pandas as pd
+import json
 from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -31,7 +32,7 @@ def predict_churn(record: dict) -> dict:
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['POST', 'GET'])
 def customer_info():
     if request.method == 'POST':
 
@@ -47,7 +48,15 @@ def customer_info():
         else:
             models.append({"name": mm, "desc": mm})
 
+    # Altrimenti, se viene fatto GET assumo che la richiesta arrivi da browser
     return render_template("index.html", models = models)
+
+@app.route('/models', methods=['POST'])
+def get_avaliable_models():
+    if request.method == 'POST':
+        models = [{"name": mm, "desc": mm} for mm in get_available_models()]
+        return(json.dumps(models))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

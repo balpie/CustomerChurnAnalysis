@@ -42,3 +42,11 @@ La cartella `models` contiene nelle sottocartelle i modelli che potranno essere
 utilizzati dal server
 
 Il [dataset](https://www.kaggle.com/datasets/blastchar/telco-customer-churn/code?datasetId=13996&sortBy=voteCount) preso come riferimento
+
+## API
+Per fare una richiesta al server con i modelli disponibili, è sufficiente chiamare
+```sh
+curl -d "" <url_sito>/models
+```
+e verrà restituito un json, composto da una lista dei modelli disponibili, ognuno
+identificato univocamente dal campo "nome"
