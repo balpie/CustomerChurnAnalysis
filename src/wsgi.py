@@ -4,6 +4,9 @@ import pandas as pd
 from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 
+from model_registry import get_available_models, predict 
+
+
 # Carica gli oggetti salvati da sgdc.py
 pipeline = joblib.load(SCRIPT_DIR / "../models/sgdc/churn_pipeline_sgdc.joblib")
 label_encoder = joblib.load(SCRIPT_DIR / "../models/sgdc/churn_label_encoder_sgdc.joblib")
@@ -36,7 +39,15 @@ def customer_info():
         pred = predict_churn(request.form.to_dict())
         
         return f"predizione: {pred['prediction']}"
-    return render_template("index.html")
+    models = []
+    for mm in get_available_models():
+        # FIXME: da cambiare quando si aggiunge .json file per i metadati
+        if mm == "sgdc":
+            models.append({"name": mm, "desc": "Stochastic Gradient Descent Classifier"})
+        else:
+            models.append({"name": mm, "desc": mm})
+
+    return render_template("index.html", models = models)
 
 if __name__ == '__main__':
     app.run(debug=True)
