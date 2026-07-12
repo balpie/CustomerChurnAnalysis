@@ -4,6 +4,10 @@
         margin: 0;
     }
 
+    .Error{
+        color: red
+    }
+
     .container {
         width: 800px;
         margin: 40px auto;
@@ -13,7 +17,7 @@
         box-shadow: 0 0 10px rgba(0,0,0,.1);
     }
 
-    h1 {
+    h1 ,h2{
         text-align: center;
         margin-bottom: 5px;
     }

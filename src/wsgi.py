@@ -1,5 +1,4 @@
 from flask import Flask, request, render_template
-import joblib
 import pandas as pd
 import json
 from pathlib import Path
@@ -7,55 +6,45 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 
 from model_registry import get_available_models, predict 
 
-
-# Carica gli oggetti salvati da sgdc.py
-pipeline = joblib.load(SCRIPT_DIR / "../models/sgdc/churn_pipeline_sgdc.joblib")
-label_encoder = joblib.load(SCRIPT_DIR / "../models/sgdc/churn_label_encoder_sgdc.joblib")
-feature_columns = joblib.load(SCRIPT_DIR / "../models/sgdc/churn_feature_columns_sgdc.joblib")
-print(f"feature_cols = {feature_columns}")
-
-def predict_churn(record: dict) -> dict:
-    """
-    Prende un dizionario con le feature di un cliente (stesse colonne
-    usate in training, ESCLUSO "Churn") e restituisce la predizione.
-    """
-    record_df = pd.DataFrame([record], columns=feature_columns)
-
-    pred_encoded = pipeline.predict(record_df)[0]
-    pred_label = label_encoder.inverse_transform([pred_encoded])[0]
-    score = pipeline.decision_function(record_df)[0]
-
-    return {
-        "prediction": pred_label,
-        "decision_score": float(score),
-    }
-
 app = Flask(__name__)
 
 @app.route('/', methods=['POST', 'GET'])
 def customer_info():
     if request.method == 'POST':
 
-        print(dict(request.form))
-        pred = predict_churn(request.form.to_dict())
+        print(f"Arrivata richiesta: \n{dict(request.form)}")
+        print(f"Tipo di request.form: {type(request.form)}")
+        print(f"Tipo di un valore nullo: {dict(request.form)['MonthlyCharges']}")
+        # Sanifico l'ingresso
+        if any(val == '' for val in request.form.values()):
+            return render_template(
+                    "index.html",
+                    models=get_available_models(),
+                    error="Compila tutti i campi."
+                ), 400
+        try:
+            pred = predict(request.form.to_dict())
+        except Exception as e:
+            return render_template(
+                "index.html",
+                models=get_available_models(),
+                error=f"Qualcosa è andato storto: {type(e).__name__}: {e}"
+            ), 400
+
         
         return f"predizione: {pred['prediction']}"
     models = []
     for mm in get_available_models():
-        # FIXME: da cambiare quando si aggiunge .json file per i metadati
-        if mm == "sgdc":
-            models.append({"name": mm, "desc": "Stochastic Gradient Descent Classifier"})
-        else:
-            models.append({"name": mm, "desc": mm})
+        print(mm)
+        models.append({"name": mm["name"], "desc": mm["desc"]})
 
     # Altrimenti, se viene fatto GET assumo che la richiesta arrivi da browser
-    return render_template("index.html", models = models)
+    return render_template("index.html", models = get_available_models())
 
 @app.route('/models', methods=['POST'])
-def get_avaliable_models():
+def api_get_models():
     if request.method == 'POST':
-        models = [{"name": mm, "desc": mm} for mm in get_available_models()]
-        return(json.dumps(models))
+        return(get_available_models())
 
 
 if __name__ == '__main__':
