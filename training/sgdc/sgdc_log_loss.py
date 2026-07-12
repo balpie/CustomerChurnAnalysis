@@ -5,7 +5,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, confusion_matrix
 from pathlib import Path
-import json
+from training.save_metadata import save_metadata
 import pandas as pd
 import joblib 
 
@@ -133,23 +133,7 @@ if __name__ == "__main__":
             "label_encoder_path": str(label_encoder_path.relative_to(PRJ_ROOT_DIR)),
             "features_path": str(features_path.relative_to(PRJ_ROOT_DIR))
         }
-    try:
-        with open(PRJ_ROOT_DIR / "models/metadata.json", "r") as f:
-            models = json.load(f)
-    except FileNotFoundError:
-        models = []
-    except json.JSONDecodeError:
-        models = []
 
-    found = False
-    for x in models:
-        if x["name"] == model_metadata["name"]:
-            found = True
-            break
-    if not found:
-        with open(PRJ_ROOT_DIR / "models/metadata.json", "w") as f:
-            models.append(model_metadata)
-            json.dump(models, f)
+    save_metadata(model_metadata, PRJ_ROOT_DIR / "models/metadata.json")
 
-    print("\nModello salvato in: "+ str(PRJ_ROOT_DIR) + "/models/sgdc_log_loss/")
 
