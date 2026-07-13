@@ -21,12 +21,15 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
  
+import joblib 
+from training.save_metadata import save_metadata
+
  
 # ---------------------------------------------------------------------------
 # 1. Caricamento e split dei dati
 # ---------------------------------------------------------------------------
-SCRIPT_DIR = Path(__file__).resolve().parent
-df = pd.read_csv(SCRIPT_DIR / "../../data/clean/telco_customer_churn_clean.csv")
+PRJ_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+df = pd.read_csv(PRJ_ROOT_DIR / "data/clean/telco_customer_churn_clean.csv")
 
 y = df["Churn"]
 X = df.drop(columns=["Churn"])
@@ -183,3 +186,35 @@ n_folds = cv_strategy.get_n_splits()
 print(f"\nCombinazioni totali testate: {int(n_combinations)}")
 print(f"Fold di cross-validation: {n_folds}")
 print(f"Totale fit eseguiti: {int(n_combinations) * n_folds}")
+
+
+# ---------------------------------------------------------------------------
+# 9. Esporto il best model 
+# ---------------------------------------------------------------------------
+if __name__ == "__main__":
+
+    # Salva su disco la pipeline addestrata (preprocessing + modello) e il
+    # label encoder, in modo da poterli ricaricare da un altro script senza
+    # dover rieseguire il training da capo.
+    # Creo la nuova directory se non esiste, altrimenti continuo
+    Path(PRJ_ROOT_DIR / "models/logisticRegression_best_params").mkdir(parents = True, exist_ok = True)
+
+    pipeline_path = PRJ_ROOT_DIR / "models/logisticRegression_best_params/churn_pipeline_logisticRegression_best_params.joblib"
+    label_encoder_path = PRJ_ROOT_DIR / "models/logisticRegression_best_params/churn_label_encoder_logisticRegression_best_params.joblib"
+    features_path = PRJ_ROOT_DIR / "models/logisticRegression_best_params/churn_feature_columns_logisticRegression_best_params.joblib"
+
+    joblib.dump(best_model, pipeline_path)
+    joblib.dump(label_encoder, label_encoder_path)
+    joblib.dump(list(X.columns), features_path)
+
+
+    # Aggiorno il json dei modelli disponibili
+    model_metadata = {
+            "name": "logisticRegression_best_params", 
+            "desc": "logistic Regression (migliori parametri ottenuti dalla gridSearch)",
+            "pipeline_path": str(pipeline_path.relative_to(PRJ_ROOT_DIR)),
+            "label_encoder_path": str(label_encoder_path.relative_to(PRJ_ROOT_DIR)),
+            "features_path": str(features_path.relative_to(PRJ_ROOT_DIR))
+        }
+
+    save_metadata(model_metadata, PRJ_ROOT_DIR / "models/metadata.json")

@@ -12,7 +12,7 @@ from sklearn.pipeline import Pipeline
 import pandas as pd
 from pathlib import Path
 
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def calcola_risultati():
     """
@@ -73,11 +73,11 @@ def calcola_risultati():
 
     modelli = {
         'Logistic Regression': LogisticRegression(),
+        'KNN': KNeighborsClassifier(),
+        'Gradient Boosting': GradientBoostingClassifier(),
+
         'Decision Tree': DecisionTreeClassifier(),
         'Random Forest': RandomForestClassifier(),
-        'Gradient Boosting': GradientBoostingClassifier(),
-        'SVM': SVC(),
-        'KNN': KNeighborsClassifier()
     }
 
 
