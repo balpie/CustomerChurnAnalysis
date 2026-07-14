@@ -58,7 +58,6 @@ def calcola_risultati():
             "F1": f1,
             #"ClassificationReport":
         })
-
         print(f"\n--- {mm['desc']} ---")
         print("Confusion Matrix:")
         print(cm)

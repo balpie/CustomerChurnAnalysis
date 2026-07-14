@@ -1,9 +1,8 @@
 from sklearn.linear_model import SGDClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import classification_report, confusion_matrix
 from pathlib import Path
 from training.save_metadata import save_metadata
 import pandas as pd
@@ -13,7 +12,7 @@ PRJ_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 #print(df)
 
 # Separa target dalle feature
-pd.load_csv(PRJ_ROOT_DIR / "data/clean/training_set")
+df = pd.read_csv(PRJ_ROOT_DIR / "data/clean/training_set.csv")
 y = df["Churn"]
 X = df.drop(columns=["Churn"])
 
@@ -47,65 +46,26 @@ pipeline = Pipeline(
     ]
 )
 
-# Split train/test
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.19, random_state=42, stratify=y
-)
+param_grid = {
+    "classifier__loss": [ "hinge", "log_loss", "modified_huber" ],
+    "classifier__penalty": [ "l2", "l1", "elasticnet" ],
+    "classifier__alpha": [ 1e-5, 1e-4, 1e-3, 1e-2 ],
+    "classifier__max_iter": [ 1000, 3000, 5000 ],
+    "classifier__tol": [ 1e-3, 1e-4 ]
+}
 
-pipeline.fit(X_train, y_train)
+cv_strategy = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-accuracy = pipeline.score(X_test, y_test)
-print(f"Accuracy: {accuracy:.2%}")
+grid_search = GridSearchCV(
+        pipeline, 
+        param_grid, 
+        scoring="f1", 
+        n_jobs=None, 
+        refit=True, 
+        cv=cv_strategy, 
+        verbose=1)
 
-y_pred = pipeline.predict(X_test)
-
-print(classification_report(y_test, y_pred),"\n")
-print(confusion_matrix(y_test, y_pred))
-
-
-def predict_churn(record: dict) -> dict:
-    """
-    Prende in input un singolo record del dataset churn (come dizionario
-    con le stesse colonne/feature usate in fase di training, ESCLUSO il
-    target "Churn"), applica lo stesso encoding usato in training tramite
-    la pipeline, e restituisce l'esito della predizione.
-
-    Esempio d'uso:
-        nuovo_cliente = {
-            "gender": "Female",
-            "SeniorCitizen": 0,
-            "Partner": "Yes",
-            "Dependents": "No",
-            "tenure": 12,
-            "PhoneService": "Yes",
-            ...  # tutte le altre colonne presenti in X
-        }
-        risultato = predict_churn(nuovo_cliente)
-        print(risultato)
-    """
-    # Controlla che tutte le colonne del dataframe siano presenti in record
-    missing_cols = set(X.columns) - set(record.keys())
-    if missing_cols:
-        raise ValueError(f"Mancano queste colonne nel record: {missing_cols}")
-    
-    # Trasforma il dizionario in un DataFrame con una sola riga,
-    # rispettando le stesse colonne viste durante il training
-    record_df = pd.DataFrame([record], columns=X.columns)
-
-    # La pipeline applica automaticamente OneHotEncoder + StandardScaler
-    # esattamente come fatto sul train, poi passa i dati al classificatore
-    pred_encoded = pipeline.predict(record_df)[0]
-    pred_label = label_encoder.inverse_transform([pred_encoded])[0]
-
-    # decision_function restituisce la distanza dall'iperpiano di separazione:
-    # valori più alti (in valore assoluto) indicano maggiore confidenza
-    score = pipeline.decision_function(record_df)[0]
-
-    return {
-        "prediction": pred_label,
-        "decision_score": float(score),
-    }
-
+grid_search.fit(X, y)
 
 
 if __name__ == "__main__":
@@ -114,26 +74,24 @@ if __name__ == "__main__":
     # label encoder, in modo da poterli ricaricare da un altro script senza
     # dover rieseguire il training da capo.
     # Creo la nuova directory se non esiste, altrimenti continuo
-    Path(PRJ_ROOT_DIR / "models/sgdc_log_loss").mkdir(parents = True, exist_ok = True)
+    Path(PRJ_ROOT_DIR / "models/sgdc").mkdir(parents = True, exist_ok = True)
 
-    pipeline_path = PRJ_ROOT_DIR / "models/sgdc_log_loss/churn_pipeline_sgdc_log_loss.joblib"
-    label_encoder_path = PRJ_ROOT_DIR / "models/sgdc_log_loss/churn_label_encoder_sgdc.joblib"
-    features_path = PRJ_ROOT_DIR / "models/sgdc_log_loss/churn_feature_columns_sgdc.joblib"
+    pipeline_path = PRJ_ROOT_DIR / "models/sgdc/churn_pipeline_sgdc.joblib"
+    label_encoder_path = PRJ_ROOT_DIR / "models/sgdc/churn_label_encoder_sgdc.joblib"
+    features_path = PRJ_ROOT_DIR / "models/sgdc/churn_feature_columns_sgdc.joblib"
 
-    joblib.dump(pipeline, pipeline_path)
+    joblib.dump(grid_search.best_estimator_, pipeline_path)
     joblib.dump(label_encoder, label_encoder_path)
     joblib.dump(list(X.columns), features_path)
 
 
     # Aggiorno il json dei modelli disponibili
     model_metadata = {
-            "name": "sgdc_log_loss", 
-            "desc": "Stochastic Gradient Descent Classifier (log loss)",
+            "name": "sgdc", 
+            "desc": "Stochastic Gradient Descent Classifier",
             "pipeline_path": str(pipeline_path.relative_to(PRJ_ROOT_DIR)),
             "label_encoder_path": str(label_encoder_path.relative_to(PRJ_ROOT_DIR)),
             "features_path": str(features_path.relative_to(PRJ_ROOT_DIR))
         }
 
     save_metadata(model_metadata, PRJ_ROOT_DIR / "models/metadata.json")
-
-

@@ -197,11 +197,11 @@ if __name__ == "__main__":
     # label encoder, in modo da poterli ricaricare da un altro script senza
     # dover rieseguire il training da capo.
     # Creo la nuova directory se non esiste, altrimenti continuo
-    Path(PRJ_ROOT_DIR / "models/logisticRegression_best_params").mkdir(parents = True, exist_ok = True)
+    Path(PRJ_ROOT_DIR / "models/logisticRegression").mkdir(parents = True, exist_ok = True)
 
-    pipeline_path = PRJ_ROOT_DIR / "models/logisticRegression_best_params/churn_pipeline_logisticRegression_best_params.joblib"
-    label_encoder_path = PRJ_ROOT_DIR / "models/logisticRegression_best_params/churn_label_encoder_logisticRegression_best_params.joblib"
-    features_path = PRJ_ROOT_DIR / "models/logisticRegression_best_params/churn_feature_columns_logisticRegression_best_params.joblib"
+    pipeline_path = PRJ_ROOT_DIR / "models/logisticRegression/churn_pipeline_logisticRegression.joblib"
+    label_encoder_path = PRJ_ROOT_DIR / "models/logisticRegression/churn_label_encoder_logisticRegression.joblib"
+    features_path = PRJ_ROOT_DIR / "models/logisticRegression/churn_feature_columns_logisticRegression.joblib"
 
     joblib.dump(best_model, pipeline_path)
     joblib.dump(label_encoder, label_encoder_path)
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
     # Aggiorno il json dei modelli disponibili
     model_metadata = {
-            "name": "logisticRegression_best_params", 
+            "name": "logisticRegression", 
             "desc": "logistic Regression (migliori parametri ottenuti dalla gridSearch)",
             "pipeline_path": str(pipeline_path.relative_to(PRJ_ROOT_DIR)),
             "label_encoder_path": str(label_encoder_path.relative_to(PRJ_ROOT_DIR)),
