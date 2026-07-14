@@ -10,10 +10,10 @@ import pandas as pd
 import joblib 
 
 PRJ_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-df = pd.read_csv(PRJ_ROOT_DIR / "data/clean/telco_customer_churn_clean.csv")
 #print(df)
 
 # Separa target dalle feature
+pd.load_csv(PRJ_ROOT_DIR / "data/clean/training_set")
 y = df["Churn"]
 X = df.drop(columns=["Churn"])
 

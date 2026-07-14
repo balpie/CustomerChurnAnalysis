@@ -1,17 +1,12 @@
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report,ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, \
+        accuracy_score, precision_score, \
+        recall_score, f1_score, \
+        classification_report,ConfusionMatrixDisplay
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 import pandas as pd
 from pathlib import Path
-
+import json
+import joblib
 import matplotlib.pyplot as plt
 
 def calcola_risultati():
@@ -30,82 +25,32 @@ def calcola_risultati():
         }
 
     L'array di dizionari viene utilizzato per fare grafici e valutazioni delle performance 
-
-    In futuro può essere possibile non dover eseguire encoding, preprocessor e addestramento,
-    ma utilizzare dei joblib.
-
-
     """
 
-    SCRIPT_DIR = Path(__file__).resolve().parent
-    df = pd.read_csv(SCRIPT_DIR / "../data/clean/telco_customer_churn_clean.csv")
+    ROOT_DIR = Path(__file__).resolve().parent.parent
+    with open(ROOT_DIR / "models/metadata.json") as f:
+        modelli = json.load(f)
 
-    # Separa target dalle feature
-    y = df["Churn"]
-    X = df.drop(columns=["Churn"])
-
-    # Encoding del target
-    label_encoder = LabelEncoder()
-    y = label_encoder.fit_transform(y)
-    print(label_encoder.classes_)
-
-    # Individua automaticamente le colonne categoriche e numeriche
-    categorical_cols = X.select_dtypes(include=["object", "str","category"]).columns.tolist()
-    numeric_cols = X.select_dtypes(exclude=["object", "str", "category"]).columns.tolist()
-
-    # Preprocessing: le categoriche vengono codificate con OneHotEncoder,
-    # le numeriche vengono standardizzate. In questo modo l'encoding
-    # viene "imparato" sul train e riapplicato in modo coerente a qualsiasi
-    # nuovo record passato in seguito (anche con categorie non viste).
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
-            ("num", StandardScaler(), numeric_cols),
-        ]
-    )
-
-    # Split train/test
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
-
-
-
-    modelli = {
-        'Logistic Regression': LogisticRegression(),
-        'KNN': KNeighborsClassifier(),
-        'Gradient Boosting': GradientBoostingClassifier(),
-
-        'Decision Tree': DecisionTreeClassifier(),
-        'Random Forest': RandomForestClassifier(),
-    }
-
-
-
-
+    test_set = pd.read_csv(ROOT_DIR / "data/clean/test_set.csv")
+    y_test = test_set["Churn"]
+    X_test = test_set.drop(columns = ["Churn"])
     risultati = []
-    for nome, modello in modelli.items():
-        pipeline = Pipeline(
-            steps=[
-                ("preprocessore", preprocessor),
-                ("classificatore",modello)
-            ]
-        )
+    for mm in modelli:
 
+        pipeline = joblib.load(ROOT_DIR / mm["pipeline_path"])
 
-        pipeline.fit(X_train, y_train)
-        y_pred = pipeline.predict(X_test)
+        y_pred = np.where(pipeline.predict(X_test) == 1, "Yes", "No")
 
         #calcolo confusion matrix e metriche di valutazione
         cm = confusion_matrix(y_test, y_pred)
         accuracy = accuracy_score(y_test, y_pred)
-        precision = precision_score(y_test, y_pred,pos_label=1)
-        recall = recall_score(y_test, y_pred, pos_label=1)
-        f1 = f1_score(y_test, y_pred, pos_label=1)
+        precision = precision_score(y_test, y_pred,pos_label = "Yes")
+        recall = recall_score(y_test, y_pred, pos_label = "Yes")
+        f1 = f1_score(y_test, y_pred, pos_label = "Yes")
         classification_report(y_test,y_pred,)
 
         risultati.append({
-            "Modello": nome,
+            "Modello": mm["desc"],
             "ConfusionMatrix": cm,
             "Accuracy": accuracy,
             "Precision": precision,
@@ -114,7 +59,7 @@ def calcola_risultati():
             #"ClassificationReport":
         })
 
-        print(f"\n--- {nome} ---")
+        print(f"\n--- {mm['desc']} ---")
         print("Confusion Matrix:")
         print(cm)
         print(f"Accuracy:  {accuracy:.4f}")
@@ -215,5 +160,3 @@ if __name__ == "__main__":
     grafica_metriche_confronto(risultati)
 
     
-
-
