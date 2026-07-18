@@ -30,8 +30,7 @@ def customer_info():
                 error=f"Qualcosa è andato storto: {type(e).__name__}: {e}"
             ), 400
 
-        
-        return f"predizione: {pred['prediction']}"
+        return render_template("index.html", models = get_available_models(), prediction = pred)
     models = []
     for mm in get_available_models():
         print(mm)
