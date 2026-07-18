@@ -20,6 +20,14 @@
         Inserire le informazioni del cliente per prevedere un'eventuale abbandono
     </p>
 
+    {% if prediction %}
+    <div class="result">
+        {% for key, value in prediction.items() %}
+            <p><strong>{{ key }}:</strong> {{ value }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <form method="POST">
         <div class="field model">
             <label>Modello di classificazione</label>
@@ -194,11 +202,6 @@
 
     </form>
 
-    {% if prediction %}
-    <div class="result">
-        Prediction: {{ prediction }}
-    </div>
-    {% endif %}
 
 </div>
 
