@@ -13,8 +13,6 @@ def customer_info():
     if request.method == 'POST':
 
         print(f"Arrivata richiesta: \n{dict(request.form)}")
-        print(f"Tipo di request.form: {type(request.form)}")
-        print(f"Tipo di un valore nullo: {dict(request.form)['MonthlyCharges']}")
         # Sanifico l'ingresso
         if any(val == '' for val in request.form.values()):
             return render_template(
@@ -22,6 +20,7 @@ def customer_info():
                     models=get_available_models(),
                     error="Compila tutti i campi."
                 ), 400
+        pred = predict(request.form.to_dict())
         try:
             pred = predict(request.form.to_dict())
         except Exception as e:
