@@ -50,3 +50,13 @@ curl -d "" <url_sito>/models
 ```
 e verrà restituito un json, composto da una lista dei modelli disponibili, ognuno
 identificato univocamente dal campo "nome"
+
+## Docker 
+Per realizzare l'immagine docker, utilizzare il comando:
+```sh  
+docker build -t app_flask .
+```
+per creare e avviare un nuovo container a partire dall'immagine docker appena creata, utilizzare il comando:
+```sh  
+docker run -p 5000:5000 app_flask
+```
