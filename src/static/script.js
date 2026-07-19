@@ -24,15 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             if (noInternet) {
-                select.value = "No internet service";
-                select.disabled = true;
+                select.value = "No";
+                select.parentNode.style.display = "none";
             } else {
-                select.disabled = false;
-
-                // se era stato impostato automaticamente prima
-                if (select.value === "No internet service") {
-                    select.value = "No";
-                }
+                select.parentNode.style.display = "flex";
             }
         });
     }
@@ -44,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const select = document.querySelector(
                 `select[name="${serviceName}"]`
             );
-            select.disabled = true;
+            select.readonly = true;
         });
     } else {
         updateInternetDependentFields();
