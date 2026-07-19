@@ -25,9 +25,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (noInternet) {
                 select.value = "No";
-                select.type = "hidden";
+                select.parentNode.style.display = "none";
             } else {
-                select.type = "hidden";
+                select.parentNode.style.display = "flex";
             }
         });
     }
