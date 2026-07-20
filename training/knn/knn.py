@@ -39,16 +39,10 @@ pipe = Pipeline(
 )
 
 k = isqrt(len(X))
-#lista_n_neighbors = list(range(k - 20, k - 10)) + list(range(k + 10, k + 20))
 
-lista_n_neighbors = list(range(1,k + 1)) #best = 37 
-#lista_n_neighbors = list(range(k, 2*k))  #best = 87
-best = 37
-lista_n_neighbors = list(range(best,k + 1, 3))
 
-#a partire dal valore k, facendo diverse iterazioni su un intervallo totale di [1, 2*k],
-#siamo arrivati alla conclusione che 37 è il miglior numero per questo problema tenendo conto delle distanze euclidean e manhattan
-# e in un intervallo [1, k + 1] con la metrica minkowski utilizzando p = [1.5, 3, 4]
+lista_n_neighbors = list(range(2,k + 10))
+
 param_grid = [
     {
         'knn__n_neighbors': lista_n_neighbors,
@@ -112,10 +106,12 @@ if __name__ == "__main__":
     pipeline_path = PRJ_ROOT_DIR / "models/knn/churn_pipeline_knn.joblib"
     label_encoder_path = PRJ_ROOT_DIR / "models/knn/churn_label_encoder_knn.joblib"
     features_path = PRJ_ROOT_DIR / "models/knn/churn_feature_columns_knn.joblib"
+    risultati_grid_search = PRJ_ROOT_DIR / "models/knn/risultati_grid_search_2_k_piu_10.joblib"
 
     joblib.dump(grid_search.best_estimator_, pipeline_path)
     joblib.dump(label_encoder, label_encoder_path)
     joblib.dump(list(X.columns), features_path)
+    joblib.dump(grid_search.cv_results_,risultati_grid_search)
 
 
     # Aggiorno il json dei modelli disponibili
