@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-from model_registry import get_available_models, predict 
+from src.model_registry import get_available_models, predict 
 
 app = Flask(__name__)
 
