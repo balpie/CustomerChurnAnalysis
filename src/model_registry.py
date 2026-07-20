@@ -47,11 +47,19 @@ def predict(form: dict):
 
     pred_encoded = pipeline.predict(df_record )[0]
     pred_label = label_encoder.inverse_transform([pred_encoded])[0]
-    score = pipeline.decision_function(df_record)[0]
 
-    return {
+    result = {
         "prediction": pred_label,
-        "decision_score": float(score),
     }
-    
+
+    if hasattr(pipeline, "decision_function"):
+        result["confidence"] = float(
+            pipeline.decision_function(df_record)[0]
+        )
+    elif hasattr(pipeline, "predict_proba"):
+        result["confidence"] = float(
+            pipeline.predict_proba(df_record)[0, pred_encoded]
+        )
+
+    return result
 
