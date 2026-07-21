@@ -27,7 +27,6 @@ def predict(form: dict):
     form['model'] contiene l'identificatore del modello da utilizzare
     """
 
-    # FIXME: una volta caricato il modello dovrebbe rimanere in memoria
     with open(ROOT_DIR / "models/metadata.json") as f:
         models = json.load(f)
     curr_model = None
