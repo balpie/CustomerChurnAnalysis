@@ -32,7 +32,6 @@ def customer_info():
                     models=get_available_models(),
                     error="Compila tutti i campi."
                 ), 400
-        pred = predict(request.form.to_dict())
         try:
             pred = predict(request.form.to_dict())
         except Exception as e:
@@ -43,10 +42,6 @@ def customer_info():
             ), 400
 
         return render_template("index.html", models = get_available_models(), prediction = dict(pred))
-    models = []
-    for mm in get_available_models():
-        print(mm)
-        models.append({"name": mm["name"], "desc": mm["desc"]})
 
     # Altrimenti, se viene fatto GET assumo che la richiesta arrivi da browser
     return render_template("index.html", models = get_available_models())
