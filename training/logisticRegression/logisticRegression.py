@@ -47,17 +47,20 @@ param_grid = [
     {
         "clf__solver": ["liblinear"],
         "clf__l1_ratio": [0.0, 1.0],          # L2 e L1
-        "clf__C": np.logspace(-4, 4, 9)
+        "clf__C": np.logspace(-4, 4, 9),
+        "clf__class_weight": ["balanced",None]
     },
     {
         "clf__solver": ["lbfgs"],
         "clf__l1_ratio": [0.0],               # solo L2
-        "clf__C": np.logspace(-4, 4, 9)
+        "clf__C": np.logspace(-4, 4, 9),
+        "clf__class_weight": ["balanced",None]
     },
     {
         "clf__solver": ["saga"],
         "clf__l1_ratio": [0.0, 0.3, 0.5, 0.7, 1.0],  # L2, elasticnet, L1
-        "clf__C": np.logspace(-4, 4, 9)
+        "clf__C": np.logspace(-4, 4, 9),
+        "clf__class_weight": ["balanced",None]
     },
 ]
  
@@ -110,7 +113,7 @@ if __name__ == "__main__":
     pipeline_path = PRJ_ROOT_DIR / "models/logisticRegression/churn_pipeline_logisticRegression.joblib"
     label_encoder_path = PRJ_ROOT_DIR / "models/logisticRegression/churn_label_encoder_logisticRegression.joblib"
     features_path = PRJ_ROOT_DIR / "models/logisticRegression/churn_feature_columns_logisticRegression.joblib"
-    risultati_grid_search = PRJ_ROOT_DIR / "models/logisticRegression/risultati_grid_search.joblib"
+    risultati_grid_search = PRJ_ROOT_DIR / "models/logisticRegression/risultati_grid_search_cw.joblib"
 
     joblib.dump(grid_search.best_estimator_, pipeline_path)
     joblib.dump(label_encoder, label_encoder_path)
