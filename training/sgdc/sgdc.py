@@ -9,7 +9,6 @@ import pandas as pd
 import joblib 
 
 PRJ_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-#print(df)
 
 # Separa target dalle feature
 df = pd.read_csv(PRJ_ROOT_DIR / "data/clean/training_set.csv")
@@ -42,17 +41,25 @@ preprocessor = ColumnTransformer(
 pipeline = Pipeline(
     steps=[
         ("preprocessor", preprocessor),
-        ("classifier", SGDClassifier(loss="log_loss", penalty="l2", max_iter=100, random_state=42)),
+        ("classifier", SGDClassifier(max_iter=1000, tol=1e-4, random_state=42)),
     ]
 )
 
-param_grid = {
-    "classifier__loss": [ "hinge", "log_loss", "modified_huber" ],
-    "classifier__penalty": [ "l2", "l1", "elasticnet" ],
-    "classifier__alpha": [ 1e-5, 1e-4, 1e-3, 1e-2 ],
-    "classifier__max_iter": [ 1000, 3000, 5000 ],
-    "classifier__tol": [ 1e-3, 1e-4 ]
-}
+param_grid = [
+    {
+        "classifier__loss": ["hinge", "log_loss", "modified_huber"],
+        "classifier__penalty": ["l2", "l1"],
+        "classifier__alpha": [1e-5, 1e-4, 1e-3, 1e-2],
+        "classifier__class_weight": ["balanced", None]
+    },
+    {
+        "classifier__loss": ["hinge", "log_loss", "modified_huber"],
+        "classifier__penalty": ["elasticnet"],
+        "classifier__alpha": [1e-5, 1e-4, 1e-3, 1e-2],
+        "classifier__l1_ratio": [0.15, 0.5, 0.85],
+        "classifier__class_weight": ["balanced", None]
+    },
+]
 
 cv_strategy = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
@@ -67,6 +74,23 @@ grid_search = GridSearchCV(
 
 grid_search.fit(X, y)
 
+# ---------------------------------------------------------------------------
+# Risultati della ricerca
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("MIGLIORI IPERPARAMETRI")
+print("=" * 60)
+print(grid_search.best_params_)
+print(f"\nMiglior score medio (CV): {grid_search.best_score_:.4f}")
+ 
+# Tabella con tutti i risultati, ordinata per rank
+results_df = pd.DataFrame(grid_search.cv_results_)
+cols_to_show = ["params", "mean_test_score", "std_test_score", "rank_test_score"]
+top_results = results_df[cols_to_show].sort_values("rank_test_score").head(10)
+ 
+print("\nTop 10 combinazioni:")
+print(top_results.to_string(index=False))
+
 
 if __name__ == "__main__":
 
@@ -79,10 +103,13 @@ if __name__ == "__main__":
     pipeline_path = PRJ_ROOT_DIR / "models/sgdc/churn_pipeline_sgdc.joblib"
     label_encoder_path = PRJ_ROOT_DIR / "models/sgdc/churn_label_encoder_sgdc.joblib"
     features_path = PRJ_ROOT_DIR / "models/sgdc/churn_feature_columns_sgdc.joblib"
+    risultati_grid_search = PRJ_ROOT_DIR / "models/sgdc/risultati_grid_search.joblib"
+
 
     joblib.dump(grid_search.best_estimator_, pipeline_path)
     joblib.dump(label_encoder, label_encoder_path)
     joblib.dump(list(X.columns), features_path)
+    joblib.dump(grid_search.cv_results_,risultati_grid_search)
 
 
     # Aggiorno il json dei modelli disponibili
