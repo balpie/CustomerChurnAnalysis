@@ -10,6 +10,18 @@ app = Flask(__name__)
 
 @app.route('/', methods=['POST', 'GET'])
 def customer_info():
+    """
+    Gestisce la pagina principale dell'applicazione.
+
+    - GET: visualizza il form per l'inserimento dei dati del cliente.
+    - POST: valida i dati ricevuti, esegue la predizione del modello
+      selezionato e restituisce la pagina con il risultato oppure un
+      messaggio di errore in caso di input non valido o eccezioni.
+
+    Returns:
+        Response: Pagina HTML renderizzata con il form, la predizione
+        oppure un messaggio di errore.
+    """
     if request.method == 'POST':
 
         print(f"Arrivata richiesta: \n{dict(request.form)}")
@@ -38,11 +50,6 @@ def customer_info():
 
     # Altrimenti, se viene fatto GET assumo che la richiesta arrivi da browser
     return render_template("index.html", models = get_available_models())
-
-@app.route('/models', methods=['POST'])
-def api_get_models():
-    if request.method == 'POST':
-        return(get_available_models())
 
 
 if __name__ == '__main__':
